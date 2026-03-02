@@ -1,0 +1,126 @@
+# ============================================
+# CUSTOMER CHURN PREDICTION - FINAL VERSION
+# Logistic Regression + Pipeline + GridSearch
+# Model Saving Included
+# ============================================
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import joblib
+
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report,
+    roc_auc_score,
+    roc_curve
+)
+
+
+def main():
+
+    # -------- 1. Load Dataset --------
+    df = pd.read_csv("data/Churn.csv")
+
+    # -------- 2. Basic Cleaning --------
+    df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+    df['TotalCharges'] = df['TotalCharges'].fillna(df['TotalCharges'].median())
+
+    # Drop ID column (not useful for prediction)
+    df = df.drop('customerID', axis=1)
+
+    # Encode target variable
+    df['Churn'] = df['Churn'].map({'Yes': 1, 'No': 0})
+
+    # -------- 3. Split Features and Target --------
+    X = df.drop('Churn', axis=1)
+    y = df['Churn']
+
+    # Identify numeric and categorical columns
+    categorical_cols = X.select_dtypes(include=['object']).columns
+    numeric_cols = X.select_dtypes(exclude=['object']).columns
+
+    # -------- 4. Preprocessing --------
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(), numeric_cols),
+            ('cat', OneHotEncoder(drop='first'), categorical_cols)
+        ]
+    )
+
+    # -------- 5. Define Pipeline --------
+    model_pipeline = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', LogisticRegression(
+            max_iter=1000,
+            class_weight='balanced'
+        ))
+    ])
+
+    # -------- 6. Train-Test Split --------
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    # -------- 7. Hyperparameter Tuning --------
+    param_grid = {
+        'classifier__C': [0.01, 0.1, 1, 10],
+        'classifier__solver': ['lbfgs']
+    }
+
+    grid_search = GridSearchCV(
+        model_pipeline,
+        param_grid,
+        cv=5,
+        scoring='roc_auc',
+        n_jobs=-1
+    )
+
+    grid_search.fit(X_train, y_train)
+
+    print("Best Parameters:", grid_search.best_params_)
+    print("Best CV ROC-AUC:", grid_search.best_score_)
+
+    # -------- 8. Use Best Model --------
+    best_model = grid_search.best_estimator_
+
+    y_pred = best_model.predict(X_test)
+    y_probs = best_model.predict_proba(X_test)[:, 1]
+
+    # -------- 9. Evaluation --------
+    print("\nTest Accuracy:", accuracy_score(y_test, y_pred))
+    print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print("\nClassification Report:\n", classification_report(y_test, y_pred))
+    print("\nTest ROC-AUC:", roc_auc_score(y_test, y_probs))
+
+    # -------- 10. ROC Curve --------
+    fpr, tpr, thresholds = roc_curve(y_test, y_probs)
+
+    plt.figure()
+    plt.plot(fpr, tpr)
+    plt.plot([0, 1], [0, 1], linestyle='--')
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve")
+    plt.show()
+
+    # -------- 11. Threshold Tuning Example --------
+    custom_threshold = 0.4
+    y_pred_custom = (y_probs > custom_threshold).astype(int)
+
+    print(f"\nClassification Report (Threshold = {custom_threshold}):\n")
+    print(classification_report(y_test, y_pred_custom))
+
+    # -------- 12. Save Trained Model --------
+    joblib.dump(best_model, "churn_model.pkl")
+    print("\nModel saved successfully as 'churn_model.pkl'")
+
+
+# Run script
+if __name__ == "__main__":
+    main()
