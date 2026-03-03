@@ -1,104 +1,114 @@
 # ============================================
-# Streamlit App - Customer Churn Prediction
+# Advanced Streamlit App - Customer Churn
 # ============================================
 
 import streamlit as st
 import pandas as pd
 import joblib
 
-# -------- Load Trained Model --------
+# -------- Page Config --------
+st.set_page_config(
+    page_title="Customer Churn Predictor",
+    page_icon="📊",
+    layout="wide"
+)
+
+# -------- Load Model --------
 model = joblib.load("churn_model.pkl")
 
-st.set_page_config(page_title="Customer Churn Predictor", layout="wide")
-
-st.title("📊 Customer Churn Prediction App")
-st.write("Predict whether a customer is likely to churn based on account details.")
-
+# -------- Title Section --------
+st.title("📊 Customer Churn Prediction Dashboard")
+st.markdown("Predict customer churn risk using a trained Machine Learning model.")
 st.markdown("---")
 
-# -------- Sidebar Inputs --------
-st.sidebar.header("Enter Customer Details")
+# -------- Layout Columns --------
+col1, col2 = st.columns([1, 1.2])
 
-def user_input():
+# ================= INPUT SECTION =================
+with col1:
+    st.header("📝 Customer Information")
 
-    gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
-    SeniorCitizen = st.sidebar.selectbox("Senior Citizen", [0, 1])
-    Partner = st.sidebar.selectbox("Has Partner", ["Yes", "No"])
-    Dependents = st.sidebar.selectbox("Has Dependents", ["Yes", "No"])
-    tenure = st.sidebar.slider("Tenure (Months)", 0, 72, 12)
+    gender = st.selectbox("Gender", ["Male", "Female"])
+    SeniorCitizen = st.selectbox("Senior Citizen", [0, 1])
+    Partner = st.selectbox("Has Partner", ["Yes", "No"])
+    Dependents = st.selectbox("Has Dependents", ["Yes", "No"])
+    tenure = st.slider("Tenure (Months)", 0, 72, 12)
 
-    PhoneService = st.sidebar.selectbox("Phone Service", ["Yes", "No"])
-    MultipleLines = st.sidebar.selectbox("Multiple Lines", ["Yes", "No", "No phone service"])
-    InternetService = st.sidebar.selectbox("Internet Service", ["DSL", "Fiber optic", "No"])
+    st.markdown("### 📡 Services")
+    PhoneService = st.selectbox("Phone Service", ["Yes", "No"])
+    MultipleLines = st.selectbox("Multiple Lines", ["Yes", "No", "No phone service"])
+    InternetService = st.selectbox("Internet Service", ["DSL", "Fiber optic", "No"])
+    OnlineSecurity = st.selectbox("Online Security", ["Yes", "No", "No internet service"])
+    OnlineBackup = st.selectbox("Online Backup", ["Yes", "No", "No internet service"])
+    DeviceProtection = st.selectbox("Device Protection", ["Yes", "No", "No internet service"])
+    TechSupport = st.selectbox("Tech Support", ["Yes", "No", "No internet service"])
+    StreamingTV = st.selectbox("Streaming TV", ["Yes", "No", "No internet service"])
+    StreamingMovies = st.selectbox("Streaming Movies", ["Yes", "No", "No internet service"])
 
-    OnlineSecurity = st.sidebar.selectbox("Online Security", ["Yes", "No", "No internet service"])
-    OnlineBackup = st.sidebar.selectbox("Online Backup", ["Yes", "No", "No internet service"])
-    DeviceProtection = st.sidebar.selectbox("Device Protection", ["Yes", "No", "No internet service"])
-    TechSupport = st.sidebar.selectbox("Tech Support", ["Yes", "No", "No internet service"])
-
-    StreamingTV = st.sidebar.selectbox("Streaming TV", ["Yes", "No", "No internet service"])
-    StreamingMovies = st.sidebar.selectbox("Streaming Movies", ["Yes", "No", "No internet service"])
-
-    Contract = st.sidebar.selectbox("Contract Type", ["Month-to-month", "One year", "Two year"])
-    PaperlessBilling = st.sidebar.selectbox("Paperless Billing", ["Yes", "No"])
-    PaymentMethod = st.sidebar.selectbox(
+    st.markdown("### 💳 Billing")
+    Contract = st.selectbox("Contract Type", ["Month-to-month", "One year", "Two year"])
+    PaperlessBilling = st.selectbox("Paperless Billing", ["Yes", "No"])
+    PaymentMethod = st.selectbox(
         "Payment Method",
-        ["Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"]
+        ["Electronic check", "Mailed check",
+         "Bank transfer (automatic)", "Credit card (automatic)"]
     )
 
-    MonthlyCharges = st.sidebar.number_input("Monthly Charges", 0.0, 200.0, 70.0)
-    TotalCharges = st.sidebar.number_input("Total Charges", 0.0, 10000.0, 1000.0)
+    MonthlyCharges = st.number_input("Monthly Charges", 0.0, 200.0, 70.0)
+    TotalCharges = st.number_input("Total Charges", 0.0, 10000.0, 1000.0)
 
-    data = {
-        "gender": gender,
-        "SeniorCitizen": SeniorCitizen,
-        "Partner": Partner,
-        "Dependents": Dependents,
-        "tenure": tenure,
-        "PhoneService": PhoneService,
-        "MultipleLines": MultipleLines,
-        "InternetService": InternetService,
-        "OnlineSecurity": OnlineSecurity,
-        "OnlineBackup": OnlineBackup,
-        "DeviceProtection": DeviceProtection,
-        "TechSupport": TechSupport,
-        "StreamingTV": StreamingTV,
-        "StreamingMovies": StreamingMovies,
-        "Contract": Contract,
-        "PaperlessBilling": PaperlessBilling,
-        "PaymentMethod": PaymentMethod,
-        "MonthlyCharges": MonthlyCharges,
-        "TotalCharges": TotalCharges
-    }
+    predict_button = st.button("🔍 Predict Churn Risk")
 
-    return pd.DataFrame([data])
+# ================= PREDICTION SECTION =================
+with col2:
+    st.header("📈 Prediction Result")
 
+    if predict_button:
 
-input_df = user_input()
+        input_data = pd.DataFrame([{
+            "gender": gender,
+            "SeniorCitizen": SeniorCitizen,
+            "Partner": Partner,
+            "Dependents": Dependents,
+            "tenure": tenure,
+            "PhoneService": PhoneService,
+            "MultipleLines": MultipleLines,
+            "InternetService": InternetService,
+            "OnlineSecurity": OnlineSecurity,
+            "OnlineBackup": OnlineBackup,
+            "DeviceProtection": DeviceProtection,
+            "TechSupport": TechSupport,
+            "StreamingTV": StreamingTV,
+            "StreamingMovies": StreamingMovies,
+            "Contract": Contract,
+            "PaperlessBilling": PaperlessBilling,
+            "PaymentMethod": PaymentMethod,
+            "MonthlyCharges": MonthlyCharges,
+            "TotalCharges": TotalCharges
+        }])
 
-st.subheader("Customer Input Data")
-st.write(input_df)
+        prediction = model.predict(input_data)[0]
+        probability = model.predict_proba(input_data)[0][1]
 
-# -------- Prediction --------
-if st.button("Predict Churn"):
+        st.markdown("### 🔢 Churn Probability")
 
-    prediction = model.predict(input_df)
-    probability = model.predict_proba(input_df)[0][1]
+        st.metric(
+            label="Probability of Churn",
+            value=f"{probability*100:.2f}%"
+        )
 
-    st.markdown("---")
-    st.subheader("Prediction Result")
+        st.markdown("---")
 
-    if prediction[0] == 1:
-        st.error(f"⚠ Customer is likely to CHURN")
+        # Risk classification
+        if probability > 0.75:
+            st.error("🔴 High Risk Customer")
+            st.write("Immediate retention strategy recommended.")
+        elif probability > 0.5:
+            st.warning("🟡 Medium Risk Customer")
+            st.write("Monitor customer engagement.")
+        else:
+            st.success("🟢 Low Risk Customer")
+            st.write("Customer likely to stay.")
+
     else:
-        st.success(f"✅ Customer is likely to STAY")
-
-    st.write(f"Churn Probability: **{probability:.2f}**")
-
-    # Risk Level Indicator
-    if probability > 0.75:
-        st.warning("🔴 High Risk Customer")
-    elif probability > 0.5:
-        st.info("🟡 Medium Risk Customer")
-    else:
-        st.success("🟢 Low Risk Customer")
+        st.info("Enter customer details and click 'Predict Churn Risk'.")
