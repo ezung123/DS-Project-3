@@ -5,6 +5,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import plotly.graph_objects as go
 
 # -------- Page Config --------
 st.set_page_config(
@@ -15,6 +16,26 @@ st.set_page_config(
 
 # -------- Load Model --------
 model = joblib.load("churn_model.pkl")
+
+# -------- Gauge Chart for Churn Probability --------
+def create_gauge(probability):
+
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=probability * 100,
+        title={'text': "Churn Risk (%)"},
+        gauge={
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "black"},
+            'steps': [
+                {'range': [0, 40], 'color': "lightgreen"},
+                {'range': [40, 70], 'color': "khaki"},
+                {'range': [70, 100], 'color': "salmon"}
+            ]
+        }
+    ))
+
+    return fig
 
 
 # -------- Function to Extract Feature Importance --------
@@ -145,6 +166,11 @@ with col2:
 
         prediction = model.predict(input_data)[0]
         probability = model.predict_proba(input_data)[0][1]
+
+        st.markdown("### 🎯 Churn Risk Gauge")
+
+        gauge = create_gauge(probability)
+        st.plotly_chart(gauge, use_container_width=True)
 
         st.markdown("---")
         st.subheader("📊 Model Feature Importance")
