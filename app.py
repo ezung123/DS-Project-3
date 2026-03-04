@@ -16,6 +16,37 @@ st.set_page_config(
 # -------- Load Model --------
 model = joblib.load("churn_model.pkl")
 
+
+# -------- Function to Extract Feature Importance --------
+def get_feature_importance(model):
+
+    # Get classifier
+    classifier = model.named_steps["classifier"]
+
+    # Get preprocessing step
+    preprocessor = model.named_steps["preprocessor"]
+
+    # Get numeric and categorical feature names
+    num_features = preprocessor.transformers_[0][2]
+    cat_features = preprocessor.transformers_[1][1].get_feature_names_out(
+        preprocessor.transformers_[1][2]
+    )
+
+    # Combine all feature names
+    all_features = list(num_features) + list(cat_features)
+
+    # Get coefficients
+    coefficients = classifier.coef_[0]
+
+    # Create dataframe
+    feature_importance = pd.DataFrame({
+        "Feature": all_features,
+        "Coefficient": coefficients
+    })
+
+    return feature_importance.sort_values(by="Coefficient", ascending=False)
+
+
 # -------- Title Section --------
 st.title("📊 Customer Churn Prediction Dashboard")
 st.markdown("Predict customer churn risk using a trained Machine Learning model.")
@@ -89,6 +120,20 @@ with col2:
 
         prediction = model.predict(input_data)[0]
         probability = model.predict_proba(input_data)[0][1]
+
+        st.markdown("---")
+        st.subheader("📊 Model Feature Importance")
+
+        feature_df = get_feature_importance(model)
+
+        top_positive = feature_df.head(5)
+        top_negative = feature_df.tail(5)
+
+        st.write("### 🔺 Top Features Increasing Churn Risk")
+        st.bar_chart(top_positive.set_index("Feature")["Coefficient"])
+
+        st.write("### 🔻 Top Features Decreasing Churn Risk")
+        st.bar_chart(top_negative.set_index("Feature")["Coefficient"])
 
         st.markdown("### 🔢 Churn Probability")
 
