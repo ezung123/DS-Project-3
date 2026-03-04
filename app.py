@@ -47,6 +47,31 @@ def get_feature_importance(model):
     return feature_importance.sort_values(by="Coefficient", ascending=False)
 
 
+# -------- Business Recommendation Logic --------
+def churn_recommendation(probability, contract, tenure):
+
+    if probability > 0.75:
+        return [
+            "Offer a loyalty discount or promotional offer",
+            "Encourage switching to a long-term contract",
+            "Provide proactive customer support outreach"
+        ]
+
+    elif probability > 0.5:
+        return [
+            "Send engagement emails or service reminders",
+            "Offer small upgrade incentives",
+            "Monitor customer service interactions"
+        ]
+
+    else:
+        return [
+            "Customer is stable",
+            "Maintain service quality",
+            "Consider upselling premium services"
+        ]
+
+
 # -------- Title Section --------
 st.title("📊 Customer Churn Prediction Dashboard")
 st.markdown("Predict customer churn risk using a trained Machine Learning model.")
@@ -157,3 +182,11 @@ with col2:
 
     else:
         st.info("Enter customer details and click 'Predict Churn Risk'.")
+    
+    st.markdown("---")
+    st.subheader("💡 Business Insight")
+
+    recommendations = churn_recommendation(probability, Contract, tenure)
+
+    for rec in recommendations:
+        st.write(f"• {rec}")
