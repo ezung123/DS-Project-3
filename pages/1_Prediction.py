@@ -114,6 +114,14 @@ if st.button("Predict Churn"):
 
     probability = model.predict_proba(input_data)[0][1]
 
+    # Determine risk category
+    if probability > 0.7:
+        risk = "High Risk 🔴"
+    elif probability > 0.4:
+        risk = "Medium Risk 🟡"
+    else:
+        risk = "Low Risk 🟢"
+
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=probability*100,
@@ -130,12 +138,17 @@ if st.button("Predict Churn"):
 
     st.plotly_chart(fig)
 
+    st.subheader("Customer Risk Level")
+
+    st.markdown(f"## {risk}")
+
     st.write(f"### Churn Probability: {probability:.2%}")
 
-# Determine risk category
-if probability > 0.7:
-    risk = "High Risk 🔴"
-elif probability > 0.4:
-    risk = "Medium Risk 🟡"
-else:
-    risk = "Low Risk 🟢"
+    if probability > 0.7:
+        st.warning("Recommended Action: Offer loyalty discount or contract upgrade")
+
+    elif probability > 0.4:
+        st.info("Recommended Action: Increase engagement through promotional offers")
+
+    else:
+        st.success("Customer is stable. Opportunity for upselling premium services")
