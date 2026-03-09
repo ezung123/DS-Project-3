@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-df = pd.read_csv("data/churn.csv")
+df = pd.read_csv("data/Churn.csv")
 
 st.title("Dataset Explorer")
 
