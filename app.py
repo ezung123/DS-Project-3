@@ -1,7 +1,5 @@
 import streamlit as st
 
-st.image("assets/dashboard_banner.png", use_container_width=True)
-
 st.set_page_config(
     page_title="Customer Churn Dashboard",
     page_icon="📊",
