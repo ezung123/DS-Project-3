@@ -2,25 +2,70 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-df = pd.read_csv("data/Churn.csv")
+st.title("📊 Data Explorer")
 
-st.title("Dataset Explorer")
+# Load dataset
+df = pd.read_csv("data/churn.csv")
 
+st.subheader("Dataset Preview")
 st.dataframe(df)
 
-fig = px.histogram(df, x="Contract", color="Churn")
+# -------------------------------
+# Churn Distribution
+# -------------------------------
 
-st.plotly_chart(fig)
+st.subheader("Churn Distribution")
 
-fig = px.pie(df, names="Churn")
-st.plotly_chart(fig)
+fig1 = px.pie(
+    df,
+    names="Churn",
+    title="Customer Churn Distribution"
+)
 
-fig = px.histogram(df, x="Contract", color="Churn")
-st.plotly_chart(fig)
+st.plotly_chart(fig1, use_container_width=True, key="pie_churn")
 
-fig = px.box(df, x="Churn", y="MonthlyCharges")
-st.plotly_chart(fig)
 
-fig = px.box(df, x="Churn", y="tenure")
-st.plotly_chart(fig)
+# -------------------------------
+# Contract vs Churn
+# -------------------------------
 
+st.subheader("Contract Type vs Churn")
+
+fig2 = px.histogram(
+    df,
+    x="Contract",
+    color="Churn",
+    barmode="group"
+)
+
+st.plotly_chart(fig2, use_container_width=True, key="contract_churn")
+
+
+# -------------------------------
+# Monthly Charges vs Churn
+# -------------------------------
+
+st.subheader("Monthly Charges vs Churn")
+
+fig3 = px.box(
+    df,
+    x="Churn",
+    y="MonthlyCharges"
+)
+
+st.plotly_chart(fig3, use_container_width=True, key="charges_churn")
+
+
+# -------------------------------
+# Tenure vs Churn
+# -------------------------------
+
+st.subheader("Tenure vs Churn")
+
+fig4 = px.box(
+    df,
+    x="Churn",
+    y="tenure"
+)
+
+st.plotly_chart(fig4, use_container_width=True, key="tenure_churn")
