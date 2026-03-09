@@ -131,3 +131,11 @@ if st.button("Predict Churn"):
     st.plotly_chart(fig)
 
     st.write(f"### Churn Probability: {probability:.2%}")
+
+# Determine risk category
+if probability > 0.7:
+    risk = "High Risk 🔴"
+elif probability > 0.4:
+    risk = "Medium Risk 🟡"
+else:
+    risk = "Low Risk 🟢"
