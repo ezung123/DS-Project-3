@@ -5,7 +5,7 @@ import plotly.express as px
 st.title("📊 Data Explorer")
 
 # Load dataset
-df = pd.read_csv("data/churn.csv")
+df = pd.read_csv("data/Churn.csv")
 
 st.subheader("Dataset Preview")
 st.dataframe(df)
